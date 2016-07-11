@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+
+{% block content %}
+
+<div style="overflow:hidden;">
+<header class="header" id="header"><!--header-start-->
+	<div class="container">
+    	<figure class="logo animated fadeInDown delay-07s">
+        	<a href="#"><img src="{% static 'main/logo.png' %}" alt=""></a>	
+        </figure>	
+        <h1 class="animated fadeInDown delay-07s">UT</h1>
+        <ul class="we-create animated fadeInUp delay-1s">
+        	<li>pjts</li>
+        </ul>
+            <a class="link animated fadeInUp delay-1s" href="/login">login</a>
+    </div>
+</div>
+</header><!--header-end-->
+
+</section>
+</div>
+<footer class="footer">
+    <div class="container">
+        <span class="copyright">Copyright © 2016 | <a href="http://bootstraptaste.com/">uniQ Track Team</a></span>
+    </div>
+    <!-- 
+        All links in the footer should remain intact. 
+        Licenseing information is available at: http://bootstraptaste.com/license/
+        You can buy this theme without footer links online at: http://bootstraptaste.com/buy/?theme=Knight
+    -->
+</footer>
+
+{% endblock %}

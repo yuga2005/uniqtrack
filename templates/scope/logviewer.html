@@ -1,0 +1,21 @@
+{% load staticfiles %}
+
+<style>
+#logtitle {
+    color:blue;
+    font-family:verdana;
+    font-size:100%;
+    text-decoration: underline;
+}
+p#logtext  {
+    color:red;
+    font-family:courier;
+    font-size:160%;
+}
+</style>
+
+{% for eachlog in getlog %}
+    <h8 id="logtitle">{{ eachlog.project }} - {{ eachlog.seq }} - {{ eachlog.shot }} - {{ eachlog.status_code }} - {{ eachlog.dept }} - {{ eachlog.created }}</h8> <br>
+    <p>{{ eachlog.notes }}</p> <br/>
+    <p>-----------------------------------------------------------------------------------------------------</p>
+{% endfor %}

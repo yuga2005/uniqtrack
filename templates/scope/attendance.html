@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+    {% block content %}
+
+<div class="container">
+    <div class="row pre-scrollable">
+        <div class="row-lg-12">
+            <h4 style="text-align: center">{{ user }} Attendance</h4>
+        </div>
+        <div class="col-lg-10" style="float: right;">
+        {% if myatten %}
+            <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Dates</th>
+      </tr>
+    </thead>
+    <tbody class="tableScroll">
+    {% for eachatten in myatten %}
+      <tr>
+        <td>{{ eachatten.day }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+        {% else %}
+            <h3>Sorry your attendance not fetched. Contact HR.</h3>
+        {% endif %}
+        </div>
+
+    </div>
+<h3><a href="/login/">Back</a></h3>
+</div>
+
+<style>
+.tableScroll{
+    width:200px;
+    max-width:200px;
+    overflow-x:scroll;
+}
+</style>
+
+    {% endblock %}
+

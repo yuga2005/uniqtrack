@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+    {% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="row-lg-2">
+            <h4>Add Shots</h4>
+        </div>
+        <div class="col-lg-10" style="float: right;">
+            <form action="" method="POST" enctype="multipart/form-data" role="form"> {% csrf_token %}
+            <div class="form-group">
+                <label>Project :</label>
+                <select class="form-control" id="sel1">
+                    {% for eachproject in projects %}
+                <option>{{ eachproject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Seq :</label>
+                <select class="form-control" id="sel1">
+                    {% for eachproject in seq %}
+                <option>{{ eachproject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+    {% endblock %}

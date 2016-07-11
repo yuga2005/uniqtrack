@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+
+
+ 	
+<header class="header" id="header"><!--header-start-->
+    <div style="overflow:hidden; align:centre">
+    <figure class="logo animated fadeInDown delay-07s">
+        	<a href="#"><img src="{% static 'main/logo.png' %}" alt=""></a>	
+        </figure>
+<form action="" method="POST" enctype="multipart/form-data"> {% csrf_token %}
+<div class="container">
+<div class="row" style="align:centre">
+    <div class="text-center">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+        <div class="flash_content">
+        {% if form.username.errors %} <div id="flash_warning" class="flash_message"> Please Check Username </div> {% endif %}
+        {% if form.password.errors %} <div id="flash_warning" class="flash_message"> Please Check Password </div> {% endif %}
+        {% if invalid %}<div id="flash_warning" class="flash_message"> {{ invalid }} </div> {% endif %}
+        </div>
+<div class="form-group">
+    {% if form.username.errors %} <p class="error"> {{ form.username.errors }} </p> {% endif %}
+<p><label for="username"{% if form.username.errors %} class="error" {% endif %}>Username:</label></p>
+<p><input id="id_username" class="input-text" name="username" type="text" value="username" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;"> </p>
+</div>
+<div class="form-group">
+   {% if form.password.errors %} <p class="error"> {{ form.password.errors }} </p> {% endif %}
+<p><label for="password"{% if form.password.errors %} class="error" {% endif %}>Password:</label></p>
+<input id="id_password" class="input-text" name="password" type="password" value="password" onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;">
+</div>
+
+<div class="form-group" style = "margin-top: 10px;">
+  <input class="link animated fadeInUp delay-1s" name="commit" style="background-color:#010101" type="submit" value="Sign In">
+    </div>
+            </div>
+        <div class="col-md-4"></div>
+</div>
+</div>
+</div>
+</form>
+
+        
+        
+</div>
+</header><!--header-end-->
+
+</section>
+</div>
+<footer class="footer">
+    <div class="container">
+        <span class="copyright">Copyright © 2016 | <a href="http://bootstraptaste.com/">uniQ Track Team</a></span>
+    </div>
+    <!-- 
+        All links in the footer should remain intact. 
+        Licenseing information is available at: http://bootstraptaste.com/license/
+        You can buy this theme without footer links online at: http://bootstraptaste.com/buy/?theme=Knight
+    -->
+</footer>
+
+
+
+
+{% endblock %}

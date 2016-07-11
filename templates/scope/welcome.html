@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load compare %}
+
+{% block content %}
+
+<style>
+.roundeds {
+  border-radius: 10px;
+  background: #000; // without a background or border applied you won't be able to see if its rounded
+}
+</style>
+    <div class="container-fluid" style="padding-left:1%;">
+    <div class="row">
+<h1 style="text-align: center; color:#FF8C00"><b>{{ tplname }}</b></h1>
+</div>
+    <div class="row">
+        <div class="col-md-8">
+           {% if status %}
+               <div class="table-responsive">
+               <table id="example" class="table table-bordered table-striped table-hover table-responsive table-condensed" cellspacing="0" width="100%">
+               <thead>
+
+               <tr>
+                    <th> Shotname </th>
+                   {% for eachdept in wtmpls %}
+                       <th><b>{{ eachdept.show_code }}</b></th>
+
+                   {% endfor %}
+               </tr>
+               </thead>
+               <tbody>
+
+
+               {% for eachshot in shotlist  %}
+
+                   <tr>
+                   <td>{{ eachshot }}</td>
+                   {% for eachdept in wtmpls %}
+                       {% with myvar=status|checkshot:eachshot|checkdept:eachdept.dept  %}
+                    {% if myvar.idstatus_codes != 0 %}
+                        <td><a class="btn btn-sm updatestatus sorting_1" href="#" role="button"  colvalue="{{ myvar.project.idprojects }}_{{ myvar.seq.idsequences }}_{{ myvar.shot.idshots }}_{{ myvar.dept.iddepartments }}_{{ myvar.statuscode.idstatus_codes }}">{{ myvar.statuscode }}</a></td>
+                        {% else %}
+                        <td><a class="btn btn-sm updatestatus sorting_1" href="#" role="button"  colvalue="{{ myvar.idprojects }}_{{ myvar.idsequences }}_{{ myvar.idshots }}_{{ myvar.iddepartments }}_{{ myvar.idstatus_codes }}">-</a></td>
+                    {% endif %}
+                       {% endwith %}
+                    {% endfor %}
+                   </tr>
+
+
+               {% endfor %}
+
+
+
+
+               </tbody>
+
+            </table>
+            </div>
+
+        {% endif %}
+
+
+        {% if assstatus %}
+                <div class="table-responsive">
+               <table id="example" class="table table-bordered table-striped table-hover table-responsive table-condensed" cellspacing="0" width="100%">
+               <thead>
+
+               <tr>
+                    <th> Shotname </th>
+                   {% for eachdept in wtmpls %}
+                       <th><b>{{ eachdept.show_code }}</b></th>
+
+                   {% endfor %}
+               </tr>
+               </thead>
+               <tbody>
+
+
+               {% for eachshot in assetlist  %}
+
+                   <tr>
+                   <td>{{ eachshot }}</td>
+                   {% for eachdept in wtmpls %}
+                       {% with myvar=assstatus|checkshot:eachshot|checkdept2:eachdept.dept  %}
+                    {% if myvar.idstatus_codes != 0 %}
+                        <td><a class="btn btn-sm updateassetstatus sorting_1" href="#" role="button"  colvalue="{{ myvar.project.idprojects }}_{{ myvar.seq.idsequences }}_{{ myvar.assetname.idassets }}_{{ myvar.dept.iddepartments }}_{{ myvar.statuscode.idstatus_codes }}">{{ myvar.statuscode }}</a></td>
+                        {% else %}
+                        <td><a class="btn btn-sm updateassetstatus sorting_1" href="#" role="button"  colvalue="{{ myvar.idprojects }}_{{ myvar.idsequences }}_{{ myvar.idassets }}_{{ myvar.iddepartments }}_{{ myvar.idstatus_codes }}">-</a></td>
+                    {% endif %}
+                       {% endwith %}
+                    {% endfor %}
+                   </tr>
+
+
+               {% endfor %}
+
+
+
+
+               </tbody>
+
+            </table>
+            </div>
+
+        {% endif %}
+</div>
+    <div class="col-md-4">
+        <div class="form-group">
+  <label for="comment">History:</label>
+  <!--<textarea class="logviewer form-control" rows="25" id="comment">test</textarea> -->
+    <div class="logviewer form-control" style="height: 440px;">
+    test
+    </div>
+    {% if status %}
+    <button type="button" class="btn btn-info btn-lg update">Update Status</button>
+    {% endif %}
+    {% if assstatus %}
+    <button type="button" class="btn btn-info btn-lg updateasset">Update Status</button>
+    {% endif %}
+</div>
+    </div>
+</div>
+</div>
+
+<input type="hidden" id="myInput" value="W3Schools">
+
+
+
+<script>
+
+
+
+
+$(document).ready(function(){
+    $('.updatestatus').click(function() {
+        var getval = $(this).attr("colvalue");
+        $("#myInput").val(getval);
+        $('.logviewer').empty();
+        var hpurl = $(location).attr('origin').concat('/getlogep/', getval);
+        $.get(hpurl, function(udata, ustatus){
+                //alert("Data: " + udata + "\nStatus: " + ustatus);
+                //alert("Data: " + data + "\nStatus: " + status);
+                //console.log(udata);
+                $('.logviewer').html(udata);
+
+        });
+
+    });
+
+});
+
+$('.updateassetstatus').click(function() {
+        var getval = $(this).attr("colvalue");
+        $("#myInput").val(getval);
+        $('.logviewer').empty();
+        var hpurl = $(location).attr('origin').concat('/getassetlog/', getval);
+        $.get(hpurl, function(udata, ustatus){
+                //alert("Data: " + udata + "\nStatus: " + ustatus);
+                //alert("Data: " + data + "\nStatus: " + status);
+                //console.log(udata);
+                $('.logviewer').html(udata);
+
+        });
+
+    });
+
+$( ".update" ).click(function() {
+    var getval = $("#myInput").val(); //getcolvalue.replace('-', '_');
+    if(getval!="W3Schools"){
+    var epurl = $(location).attr('origin').concat('/updatewin/', getval); //$(location).attr('href').concat('history/', getval, '/getupdatehistory/');
+    var handlediv = "#historyupdater";
+    $(handlediv).empty();
+    $.get(epurl, function (udata, ustatus) {
+        $(handlediv).append(udata);
+        $("#updatemod").modal("show");
+    });}
+    else{
+        alert("you didn't selected any shot. Please select.")
+    }
+});
+
+
+$( ".updateasset" ).click(function() {
+    var getval = $("#myInput").val(); //getcolvalue.replace('-', '_');
+    if(getval!="W3Schools"){
+    var epurl = $(location).attr('origin').concat('/updateassetwin/', getval); //$(location).attr('href').concat('history/', getval, '/getupdatehistory/');
+    var handlediv = "#historyupdater";
+    $(handlediv).empty();
+    $.get(epurl, function (udata, ustatus) {
+        $(handlediv).append(udata);
+        $("#updatemod").modal("show");
+    });}
+    else{
+        alert("you didn't selected any shot. Please select.")
+    }
+});
+
+$(document).ready(function() {
+    $('#example').DataTable();
+} );
+
+</script>
+
+<style>
+
+.logviewer {
+  display: block;
+  height: 500px;
+  overflow-y: scroll;
+  overflow-x: scroll;
+}
+
+</style>
+
+<div id="historyupdater">
+
+
+</div>
+
+
+
+
+{% endblock %}
+
