@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, HttpResponseRedirect, HttpResponse, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import loginForm
 from .models import Attendance, Assosiate, Project, Sequence, ProjectLog, MainDepartment, Department, Projectstatus, Template, RawTemplateName, StatusCode, RawStatusCode, Shot, DepartmentName, Linker, Assetstatus, Asset, AssetLog, AssetCategory, Color
@@ -21,6 +21,8 @@ def debug(func):
 
 @debug
 def main(request):
+    if request.user.is_authenticated():
+        return redirect('/login/')
     return render(request,'scope/index.html',{})
 
 @debug
@@ -33,6 +35,7 @@ def logins(request):
     atmpls = AssetCategory.objects.all()
     etmpls = RawTemplateName.objects.filter(epass=1)
     if request.user.is_authenticated():
+        #return render(request, 'scope/login.html', {'projects':projs, 'seq':seq, 'maindepts':maindepts,'tmpls':tmpls,'atmpls':atmpls,'etmpls':etmpls, 'asse':asse})
         return render(request, 'scope/welcome.html', {'projects':projs, 'seq':seq, 'maindepts':maindepts,'tmpls':tmpls,'atmpls':atmpls,'etmpls':etmpls, 'asse':asse})
     if request.method == 'POST':
         form = loginForm(request.POST)
@@ -121,6 +124,7 @@ def assets(request):
 @debug
 @login_required
 def getlogep(request,shot_details):
+    print(request)
     shot_parts = shot_details.split('_')
     if shot_parts[4] != 0:
         getlog = ProjectLog.objects.filter(project=shot_parts[0],seq=shot_parts[1],shot=shot_parts[2],dept=shot_parts[3]).order_by('-idproject_log')
@@ -182,24 +186,27 @@ def update(request, shot_details):
     if request.method == 'POST':
         requesteddata = json.loads(request.POST['client_response'])
     shot_parts = requesteddata['shotname'].split('-')
+    associatename = Assosiate.objects.get(login=request.user)
     codes = StatusCode.objects.get(idstatus_codes=requesteddata['code'], department = Department.objects.get(department=DepartmentName.objects.get(department_name=requesteddata['dept'])))
     pshot = Projectstatus.objects.get(idprojectstatus=shot_details)
     pshot.statuscode=codes
+    pshot.user = associatename
     pshot.save(update_fields=["statuscode"])
     project = Project.objects.get(project_name=shot_parts[0])
     seq = Sequence.objects.get(sequence=shot_parts[1])
     shot = Shot.objects.get(proj=project,seq=seq,shotname=shot_parts[2])
     dept = Department.objects.get(department=DepartmentName.objects.get(department_name=requesteddata['dept']), project=project.idprojects)
-    logupdate = ProjectLog.objects.create(project=project,seq=seq,shot=shot,dept=dept,status_code=codes,notes=requesteddata['notes'],created=timezone.now())
-    links = Linker.objects.filter(project=project, department=dept)
+    logupdate = ProjectLog.objects.create(user=associatename,project=project,seq=seq,shot=shot,dept=dept,status_code=codes,notes=requesteddata['notes'],created=timezone.now())
+    links = Linker.objects.filter(project=project, department=dept, code=codes)
     for eachlink in links:
-        ProjectLog.objects.create(project=project,seq=seq,shot=shot,dept=eachlink.effect_department,status_code=eachlink.effect_code,notes=requesteddata['notes'],created=timezone.now())
-        try:
-            pshot = Projectstatus.objects.get(project=project,seq=seq,shot=shot,dept=eachlink.effect_department)
-            pshot.statuscode=eachlink.effect_code
-            pshot.save(update_fields=["statuscode"])
-        except:
-            Projectstatus.objects.create(project=project,seq=seq,shot=shot,dept=eachlink.effect_department,statuscode=eachlink.effect_code)
+        ProjectLog.objects.create(user=associatename,project=project,seq=seq,shot=shot,dept=eachlink.effect_department,status_code=eachlink.effect_code,notes=requesteddata['notes'],created=timezone.now())
+        #try:
+        pshot = Projectstatus.objects.get(project=project,seq=seq,shot=shot,dept=eachlink.effect_department)
+        pshot.statuscode=eachlink.effect_code
+        pshot.user = associatename
+        pshot.save(update_fields=["statuscode"])
+        #except:
+        #    Projectstatus.objects.create(project=project,seq=seq,shot=shot,dept=eachlink.effect_department,statuscode=eachlink.effect_code)
     return HttpResponse(json.dumps("Updated"))
 
 
@@ -209,24 +216,27 @@ def updateasset(request, shot_details):
     if request.method == 'POST':
         requesteddata = json.loads(request.POST['client_response'])
     shot_parts = requesteddata['shotname'].split('-')
+    associatename = Assosiate.objects.get(login=request.user)
     codes = StatusCode.objects.get(idstatus_codes=requesteddata['code'], department = Department.objects.get(department=DepartmentName.objects.get(department_name=requesteddata['dept'])))
     pshot = Assetstatus.objects.get(idassetstatus=shot_details)
     pshot.statuscode=codes
+    pshot.user = associatename
     pshot.save(update_fields=["statuscode"])
     project = Project.objects.get(project_name=shot_parts[0])
     seq = Sequence.objects.get(sequence=shot_parts[1])
     assetname = Asset.objects.get(assetname=shot_parts[2])
     dept = Department.objects.get(department=DepartmentName.objects.get(department_name=requesteddata['dept']), project=project.idprojects)
-    logupdate = AssetLog.objects.create(project=project,seq=seq,asset=assetname,dept=dept,status_code=codes,notes=requesteddata['notes'],created=timezone.now())
+    logupdate = AssetLog.objects.create(user=associatename,project=project,seq=seq,asset=assetname,dept=dept,status_code=codes,notes=requesteddata['notes'],created=timezone.now())
     links = Linker.objects.filter(project=project, department=dept)
     for eachlink in links:
-        AssetLog.objects.create(project=project,seq=seq,asset=assetname,dept=eachlink.effect_department,status_code=eachlink.effect_code,notes=requesteddata['notes'],created=timezone.now())
-        try:
-            pshot = Assetstatus.objects.get(project=project,seq=seq,assetname=assetname,dept=eachlink.effect_department)
-            pshot.statuscode=eachlink.effect_code
-            pshot.save(update_fields=["statuscode"])
-        except:
-            Assetstatus.objects.create(project=project,seq=seq,assetname=assetname,dept=eachlink.effect_department,statuscode=eachlink.effect_code)
+        AssetLog.objects.create(user=associatename,project=project,seq=seq,asset=assetname,dept=eachlink.effect_department,status_code=eachlink.effect_code,notes=requesteddata['notes'],created=timezone.now())
+        #try:
+        pshot = Assetstatus.objects.get(project=project,seq=seq,assetname=assetname,dept=eachlink.effect_department)
+        pshot.statuscode=eachlink.effect_code
+        pshot.user = associatename
+        pshot.save(update_fields=["statuscode"])
+        #except:
+        #    Assetstatus.objects.create(user=associatename,project=project,seq=seq,assetname=assetname,dept=eachlink.effect_department,statuscode=eachlink.effect_code)
     return HttpResponse(json.dumps("Updated"))
 
 
@@ -234,6 +244,8 @@ def updateasset(request, shot_details):
 @debug
 @login_required
 def add(request):
+    associatename = Assosiate.objects.get(login=request.user)
+    print(associatename)
     precode = RawStatusCode.objects.get(status_code='-')
     precolor = Color.objects.get(color_name = '#949494')
     for eachproj in Project.objects.all():
@@ -244,7 +256,7 @@ def add(request):
                         codelink = StatusCode.objects.get(project= eachproj, department=eachdept, statuscode = precode)
                     except:
                         codelink, status = StatusCode.objects.get_or_create(project= eachproj, department=eachdept, statuscode = precode, colorcode=precolor)
-                    p,status = Projectstatus.objects.get_or_create(project=eachproj,seq=eachepi,shot=eachshot,dept=eachdept,statuscode=codelink)
+                    p,status = Projectstatus.objects.get_or_create(user=associatename,project=eachproj,seq=eachepi,shot=eachshot,dept=eachdept,statuscode=codelink)
 
 
     for eachproj in Project.objects.all():
@@ -256,7 +268,7 @@ def add(request):
                             codelink = StatusCode.objects.get(project= eachproj, department=eachdept, statuscode = precode)
                         except:
                             codelink, status = StatusCode.objects.get_or_create(project= eachproj, department=eachdept, statuscode = precode, colorcode=precolor)
-                        p,status = Assetstatus.objects.get_or_create(project=eachproj,seq=eachepi,catagory=eachcategory,assetname=eachasset,dept=eachdept,statuscode=codelink)
+                        p,status = Assetstatus.objects.get_or_create(user=associatename,project=eachproj,seq=eachepi,catagory=eachcategory,assetname=eachasset,dept=eachdept,statuscode=codelink)
 
     return HttpResponse("Updated")   ##render(request,'scope/add.html',{'projects':projects})
 
